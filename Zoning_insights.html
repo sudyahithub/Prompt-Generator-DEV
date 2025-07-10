@@ -649,8 +649,95 @@ textarea::placeholder {
 
       <script>
 
+
+
+
+window.addEventListener('beforeunload', (event) => {
+  if (window.skipUnloadWarning) return; // Allow silent navigation when flag is set
+
+  const savedData = JSON.parse(localStorage.getItem('formValues') || '{}');
+
+  const isFormDirty = Array.from(document.querySelectorAll('select, textarea'))
+    .some(el => {
+      const key = el.getAttribute('data-header') || el.id;
+      if (!key) return false;
+
+      const savedVal = savedData[key];
+
+      if (el.tagName === 'SELECT' && el.multiple) {
+        const currentVal = Array.from(el.selectedOptions).map(opt => opt.value);
+        return JSON.stringify(currentVal) !== JSON.stringify(savedVal || []);
+      } else {
+        const currentVal = (el.value || '').trim();
+        return currentVal !== (savedVal || '').trim();
+      }
+    });
+
+  if (isFormDirty) {
+    event.preventDefault();       // Required for some browsers
+    event.returnValue = '';       // Required for Chrome + modern browsers
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
         const optionQuantities = {};
 window.optionQuantities = optionQuantities;
+
+function saveToLocalStorage() {
+  const inputs = document.querySelectorAll('select, textarea');
+  const savedData = {};
+
+  inputs.forEach(el => {
+    const key = el.getAttribute('data-header') || el.id;
+    if (!key) return;
+
+    if (el.tagName === 'SELECT' && el.multiple) {
+      savedData[key] = Array.from(el.selectedOptions).map(opt => opt.value);
+    } else if (el.tagName === 'TEXTAREA') {
+      savedData[key] = el.value;
+    }
+  }); 
+
+  localStorage.setItem('formValues', JSON.stringify(savedData));
+}
+
+
+
+function saveQuantitiesToLocalStorage() {
+  localStorage.setItem('optionQuantities', JSON.stringify(optionQuantities));
+}
+
+// Call this after any change
+document.addEventListener('change', saveToLocalStorage);
+document.addEventListener('input', saveToLocalStorage);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -749,6 +836,9 @@ alert("❌ Failed to copy prompt. Please copy it manually.");
       // const sheetURL = 'https://docs.google.com/spreadsheets/d/1qXN1MR1pW3laS1wH_FI3vPblg3ANcqCMWVoGl0H7wek/export?format=csv';
       const sheetURL = 'https://docs.google.com/spreadsheets/d/1TtxfPpIIYBjzP32-9n9snZbNoCU69mSvYVbA3uAgGcY/export?format=csv&gid=29659935';
 
+
+
+      
       window.onload = async function () {
 
         const response = await fetch(sheetURL);
@@ -918,6 +1008,7 @@ select.setAttribute('data-pinterest', pinterestLabel); // ✅ ADD THIS
       moveSelectedOptionsToTop(select);
       if (quantityContainer) {
       updateQuantitiesForSelect(select, quantityContainer, id);
+      
       }
 
 
@@ -1047,8 +1138,62 @@ searchWrapper.appendChild(selectWrapper);
           container.appendChild(group);
         }
 
-        
+        autosizePlaceholderTextareas(-10);// adds 6px of extra space
       };
+
+function restoreFromLocalStorage() {
+  const saved = localStorage.getItem('formValues');
+  if (!saved) return;
+  const data = JSON.parse(saved);
+
+  document.querySelectorAll('select, textarea').forEach(el => {
+    const key = el.getAttribute('data-header') || el.id;
+    if (!key || !(key in data)) return;
+
+    if (el.tagName === 'SELECT' && el.multiple && Array.isArray(data[key])) {
+      Array.from(el.options).forEach(option => {
+        option.selected = data[key].includes(option.value);
+      });
+    } else if (el.tagName === 'TEXTAREA') {
+      el.value = data[key];
+    }
+
+    // Trigger UI updates
+    el.dispatchEvent(new Event('change'));
+  });
+}
+
+
+function restoreQuantitiesFromLocalStorage() {
+  const saved = localStorage.getItem('optionQuantities');
+  if (!saved) return;
+
+  const parsed = JSON.parse(saved);
+  Object.assign(optionQuantities, parsed);
+
+  // 🔁 After restoring data, refresh the quantity UI and prompt
+  document.querySelectorAll('select[multiple]').forEach(select => {
+    const fieldId = normalizeId(select.id);
+    const container = select.closest('.search-wrapper')?.querySelector('.quantity-container');
+    if (container && optionQuantities[fieldId]) {
+      updateQuantitiesForSelect(select, container, fieldId);
+    }
+  });
+
+  generatePrompt(); // ✅ Refresh prompt output after setting quantities
+  updateStructuredView?.();
+  updatePinterestQuery?.();
+}
+
+// Run this after all elements are rendered
+setTimeout(() => {
+  restoreFromLocalStorage();              // sets values
+  restoreQuantitiesFromLocalStorage();    // sets counters + regenerates prompt
+}, 1100);
+
+
+
+
 
 
     
@@ -1076,6 +1221,66 @@ searchWrapper.appendChild(selectWrapper);
     window.open(pinterestURL, '_blank');
   }
 });
+
+
+
+
+function autosizePlaceholderTextareas(extraPadding = 1) {
+  const textareas = document.querySelectorAll('textarea');
+
+  textareas.forEach(textarea => {
+    // Function to resize based on scrollHeight
+    const resize = () => {
+      textarea.style.height = '20px';//auto
+      // textarea.style.height = (textarea.scrollHeight + extraPadding) + 'px';
+    };
+
+    // Initial placeholder-based sizing
+    const placeholder = textarea.getAttribute('placeholder');
+    if (placeholder && !textarea.value.trim()) {
+      const mirror = document.createElement('div');
+      const computed = window.getComputedStyle(textarea);
+
+      Object.assign(mirror.style, {
+        position: 'absolute',
+        visibility: 'hidden',
+        whiteSpace: 'pre-wrap',
+        wordWrap: 'break-word',
+        overflowWrap: 'break-word',
+        padding: computed.padding,
+        border: computed.border,
+        font: computed.font,
+        lineHeight: computed.lineHeight,
+        width: textarea.offsetWidth + 'px',
+      });
+
+      mirror.textContent = placeholder;
+
+      document.body.appendChild(mirror);
+      const placeholderHeight = mirror.scrollHeight + extraPadding;
+      textarea.style.height = placeholderHeight + 'px';
+      document.body.removeChild(mirror);
+    } else {
+      // In case it already has value
+      resize();
+    }
+
+    // Dynamic resizing on input
+    textarea.addEventListener('input', resize);
+
+    // Optional: Resize again on window resize (e.g., responsive layout)
+    window.addEventListener('resize', resize);
+  });
+}
+
+
+
+
+
+
+
+
+
 
 
       function getLabelledImages() {
@@ -1271,6 +1476,9 @@ function getValueByLabel(labelInBrackets) {
         
  function generatePrompt() {
   const lines = ['Create a photorealistic render'];
+  console.log("Field IDs in optionQuantities:", Object.keys(window.optionQuantities));
+
+  
 
   const allInputs = document.querySelectorAll('select, textarea');
 
@@ -1310,9 +1518,12 @@ function getValueByLabel(labelInBrackets) {
   });
 
   if (!isManuallyEdited) {
-    document.getElementById('finalPrompt').value = lines.join('\n\n');
-  }
+  const promptArea = document.getElementById('finalPrompt');
+  if (promptArea) {
+    promptArea.value = lines.join('\n\n');
+  }}
 }
+
 
 
     
@@ -1328,9 +1539,14 @@ function getValueByLabel(labelInBrackets) {
     selectedOptions.forEach(opt => {
     const val = opt.value.trim();
 
-    if (!optionQuantities[fieldId][val]) {
-    optionQuantities[fieldId][val] = 1;
-    }
+    if (!optionQuantities[fieldId]) {
+  optionQuantities[fieldId] = {};
+}
+if (!optionQuantities[fieldId][val]) {
+  const savedQty = window.optionQuantities?.[fieldId]?.[val];
+  optionQuantities[fieldId][val] = savedQty || 1;
+}
+
 
     const row = document.createElement('div');
     row.className = 'quantity-row'; // NEW CLASS
@@ -1349,9 +1565,13 @@ function getValueByLabel(labelInBrackets) {
     const v = parseInt(qty.value, 10);
     if (!isNaN(v) && v >= 1) {
     optionQuantities[fieldId][val] = v;
+    // qty.setAttribute('data-value', val); // ❗ CRITICAL — needed for mapping
+
     generatePrompt();
     updateStructuredView();
     updatePinterestQuery();
+    saveQuantitiesToLocalStorage();
+
     }
     });
 
@@ -1557,22 +1777,44 @@ function getValueByLabel(labelInBrackets) {
           document.querySelector('#searchBoxContainer input').value = keywords;
     }
 
-      function removeLabel(id, value) {
-      const el = document.getElementById(normalizeId(id));
-      if (!el) return;
+  function removeLabel(fieldIdOrLabel, valueToRemove) {
+  const fieldKey = normalizeId(fieldIdOrLabel); // always normalize
+  const el = document.getElementById(fieldKey);
 
-      if (el.tagName === 'SELECT' && el.multiple) {
+  // --- Update localStorage safely ---
+  const saved = JSON.parse(localStorage.getItem('formValues') || '{}');
+
+  // Match key in storage using exact match OR normalized key
+  let matchedKey = Object.keys(saved).find(key => normalizeId(key) === fieldKey);
+
+  if (matchedKey && saved[matchedKey]) {
+    const current = saved[matchedKey];
+    if (Array.isArray(current)) {
+      saved[matchedKey] = current.filter(v => v !== valueToRemove);
+      if (saved[matchedKey].length === 0) delete saved[matchedKey];
+    } else if (typeof current === 'string' && current.trim() === valueToRemove) {
+      delete saved[matchedKey];
+    }
+
+    localStorage.setItem('formValues', JSON.stringify(saved));
+  }
+
+  // --- Update UI if field is present ---
+  if (el) {
+    if (el.tagName === 'SELECT' && el.multiple) {
       Array.from(el.options).forEach(opt => {
-      if (opt.value === value) opt.selected = false;
+        if (opt.value === valueToRemove) opt.selected = false;
       });
-      } else {
-      el.value = '';
-      }
+    } else if (el.tagName === 'TEXTAREA') {
+      if (el.value.trim() === valueToRemove) el.value = '';
+    }
 
-      updateStructuredView();
-      generatePrompt();
-      updatePinterestQuery(); // ✅ Use this instead of updatePinterestSearchInput()
-      }
+    // Trigger reactive updates
+    updateStructuredView();
+    generatePrompt();
+    updatePinterestQuery();
+  }
+}
 
     
     function updatePinterestQuery() {
@@ -1643,6 +1885,8 @@ const rightPanel = document.querySelector('.right-panel');
       </script>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+        <script src="syncForm.js"></script>
+
 
 
 
