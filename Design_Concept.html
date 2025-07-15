@@ -239,6 +239,7 @@
       }
 
       .output {
+        font-family: Arial, sans-serif;
         width: 100%;
         height: 100%;
         resize: none;
@@ -652,7 +653,7 @@ textarea::placeholder {
                <div class="floating-btn-container">
 
                  <button class="floating-chatgpt-btn reset-btn" onclick="resetAllFields()">
-                   ↻ Reset All
+                  Reset All
                  </button>
                  <button class="floating-chatgpt-btn" id="openCustomGPT">
                    Create with AI
@@ -1922,36 +1923,54 @@ function autosizePlaceholderTextareas(extraPadding = 1) {
 
 
 
+  
     function updatePinterestQuery() {
-  const allInputs = document.querySelectorAll('select, textarea');
-  const parts = [];
+    const allFields = document.querySelectorAll('select, textarea, input');
+    const promptLabels = window.promptLabels || [];
+    const row4Values = window.row4Values || [];
 
-  allInputs.forEach(el => {
-    const label = el.getAttribute('data-pinterest') || el.getAttribute('data-header');
-    if (!label) return;
+    const phraseParts = [];
 
-    let values = [];
+    allFields.forEach(field => {
+    const fieldId = field.id;
+    const index = promptLabels.findIndex(lbl => normalizeId(lbl) === normalizeId(fieldId));
+    if (index === -1) return;
 
-    if (el.tagName === 'SELECT' && el.multiple) {
-      values = Array.from(el.selectedOptions).map(opt => opt.value.trim()).filter(Boolean);
-    } else if (el.tagName === 'TEXTAREA') {
-      const val = el.value.trim();
-      if (val) values = [val];
+    const row4 = row4Values[index]?.trim();
+    if (!row4 && !field.value?.trim()) return;
+
+
+    let rawValue = '';
+    if (field.tagName === 'SELECT' && field.multiple) {
+    rawValue = Array.from(field.selectedOptions).map(opt => opt.value.trim()).filter(Boolean).join(', ');
+    } else {
+    rawValue = field.value.trim();
     }
 
-    values.forEach(v => {
-      // parts.push(`${label} ${v}`);
-      parts.push(`${v}`);
-    });
-  });
+    const hasPlaceholder = row4.includes('[') && row4.includes(']');
 
-  const searchBox = document.getElementById('pinterestSearch');
-  if (parts.length === 0) {
-    searchBox.value = 'photorealistic office interior inspiration';
-  } else {
-    searchBox.value = parts.join(' ');
-  }
-}
+    // If it's a placeholder template but no value filled, skip
+    if (hasPlaceholder && !rawValue) return;
+
+    const finalPhrase = hasPlaceholder
+    ? row4.replace(/\[(.*?)\]/g, (_, label) => rawValue)
+    : row4;
+
+    phraseParts.push(finalPhrase.trim());
+    });
+
+    // Join into one search sentence
+    const finalQuery = phraseParts.length > 0
+    ? phraseParts.join(' ')
+    : 'photorealistic office interior inspiration';
+
+    // Update input box
+    const searchBox = document.getElementById('pinterestSearch');
+    if (searchBox) {
+    searchBox.value = finalQuery;
+    }
+    
+    }
 
     document.querySelectorAll('select, textarea').forEach(el => {
       if (el.id === 'finalPrompt') return; // ⛔️ Skip the output textarea
