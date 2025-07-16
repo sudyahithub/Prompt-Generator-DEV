@@ -686,6 +686,17 @@ textarea::placeholder {
 
 
       <script>
+          const TAB_ID_KEY = 'promptBuilderTabId';
+let tabId = sessionStorage.getItem(TAB_ID_KEY);
+
+if (!tabId) {
+  tabId = Math.random().toString(36).substr(2, 9);
+  sessionStorage.setItem(TAB_ID_KEY, tabId);
+}
+
+const FORM_KEY = `formValues-${tabId}`;
+const QUANT_KEY = `optionQuantities-${tabId}`;
+
 
 
 
@@ -720,15 +731,15 @@ function saveToLocalStorage() {
     } else if (el.tagName === 'TEXTAREA') {
       savedData[key] = el.value;
     }
-  }); 
+  });
 
-  localStorage.setItem('formValues', JSON.stringify(savedData));
+  localStorage.setItem(FORM_KEY, JSON.stringify(savedData));
 }
 
 
 
 function saveQuantitiesToLocalStorage() {
-  localStorage.setItem('optionQuantities', JSON.stringify(optionQuantities));
+  localStorage.setItem(QUANT_KEY, JSON.stringify(optionQuantities));
 }
 
 // Call this after any change
@@ -802,6 +813,7 @@ window.addEventListener('beforeunload', (event) => {
 
 
 
+          
          document.getElementById("Client").addEventListener("click", function() {
   window.location.href = "index.html"});
 
@@ -911,6 +923,7 @@ alert("❌ Failed to copy prompt. Please copy it manually.");
 
       
       window.onload = async function () {
+        
 
         const response = await fetch(sheetURL);
         const csvText = await response.text();
@@ -1225,8 +1238,9 @@ searchWrapper.appendChild(selectWrapper);
       };
 
 function restoreFromLocalStorage() {
-  const saved = localStorage.getItem('formValues');
+  const saved = localStorage.getItem(FORM_KEY);
   if (!saved) return;
+
   const data = JSON.parse(saved);
 
   document.querySelectorAll('select, textarea').forEach(el => {
@@ -1241,7 +1255,6 @@ function restoreFromLocalStorage() {
       el.value = data[key];
     }
 
-    // Trigger UI updates
     el.dispatchEvent(new Event('change'));
   });
 }
@@ -1249,13 +1262,12 @@ function restoreFromLocalStorage() {
 
 
 function restoreQuantitiesFromLocalStorage() {
-  const saved = localStorage.getItem('optionQuantities');
+  const saved = localStorage.getItem(QUANT_KEY);
   if (!saved) return;
 
   const parsed = JSON.parse(saved);
   Object.assign(optionQuantities, parsed);
 
-  // 🔁 After restoring data, refresh the quantity UI and prompt
   document.querySelectorAll('select[multiple]').forEach(select => {
     const fieldId = normalizeId(select.id);
     const container = select.closest('.search-wrapper')?.querySelector('.quantity-container');
@@ -1263,10 +1275,6 @@ function restoreQuantitiesFromLocalStorage() {
       updateQuantitiesForSelect(select, container, fieldId);
     }
   });
-
-  generatePrompt(); // ✅ Refresh prompt output after setting quantities
-  updateStructuredView?.();
-  updatePinterestQuery?.();
 }
 
 // Run this after all elements are rendered
@@ -1278,7 +1286,7 @@ if (!wasReset) {
     restoreQuantitiesFromLocalStorage();
   }, 1100);
 } else {
-  sessionStorage.removeItem('resetNow'); // clear flag so next load behaves normally
+  sessionStorage.removeItem('resetNow'); // clear flag so next load behaves normally  
 }
 
 
@@ -1290,7 +1298,7 @@ if (!wasReset) {
 
 
 
-      document.getElementById('labelsBox').addEventListener('click', function (e) {
+    document.getElementById('labelsBox').addEventListener('click', function (e) {
       const tag = e.target.closest('.label-tag');
       if (!tag) return;
 
@@ -1306,18 +1314,17 @@ if (!wasReset) {
       const section = tag.closest('.form-card');
       const tagElements = section.querySelectorAll('.label-tag');
       if (tagElements.length === 0) return;
+    const grouped = {};
+    const value = tag.getAttribute('data-value')?.trim();
+    const header = tag.getAttribute('data-pinterest')?.trim() || tag.getAttribute('data-header')?.trim();
+    if (!value || !header) return;
 
-      const grouped = {};
-      const value = tag.getAttribute('data-value')?.trim();
-      const header = tag.getAttribute('data-pinterest')?.trim() || tag.getAttribute('data-header')?.trim();
-      if (!value || !header) return;
+    const query = header.includes('[')
+    ? header.replace(/\[.*?\]/, value)
+    : `${header} ${value}`;
 
-      const query = header.includes('[')
-        ? header.replace(/\[.*?\]/, value)
-        : `${header} ${value}`;
-
-      const pinterestURL = `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(query)}`;
-      window.open(pinterestURL, '_blank');
+    const pinterestURL = `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(query)}`;
+    window.open(pinterestURL, '_blank');
 
 
       const searchParts = Object.entries(grouped).map(([header, values]) => {
@@ -1329,7 +1336,9 @@ if (!wasReset) {
       }
       });
 
-   
+      // const query = searchParts.join(' ');
+      // const pinterestURL = `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(query)}`;
+      window.open(pinterestURL, '_blank');
       });
 
 
@@ -1915,7 +1924,7 @@ function autosizePlaceholderTextareas(extraPadding = 1) {
 }
 
 
-
+    
 
 
 
@@ -1969,7 +1978,7 @@ function autosizePlaceholderTextareas(extraPadding = 1) {
     if (searchBox) {
     searchBox.value = finalQuery;
     }
-    
+   
     }
 
     document.querySelectorAll('select, textarea').forEach(el => {
@@ -2002,29 +2011,45 @@ const rightPanel = document.querySelector('.right-panel');
   });
 }
 
-
-
 // 1. Run once when DOM is ready (initial load)
-window.addEventListener('DOMContentLoaded', () => {
-  restoreFromLocalStorage();
-  restoreQuantitiesFromLocalStorage();
-  generatePrompt();              // ✅ this fills the prompt on first load
+window.addEventListener('DOMContentLoaded', async () => {
+  await restoreFormState();  // ✅ Works now
+  generatePrompt();
   updateStructuredView();
   updatePinterestQuery();
 });
 
 // 2. Run again when tab regains focus (after switching)
-window.addEventListener('focus', () => {
-  generatePrompt();              // ✅ acts as backup refresher
+window.addEventListener('focus', async () => {
+  await restoreFormState(); // ✅ Works now
+  generatePrompt();
   updateStructuredView();
   updatePinterestQuery();
 });
 
 
+
+
       </script>
+<script type="module">
+  import { restoreFormState, saveFormState } from './syncForm.js';
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    await restoreFormState();
+    generatePrompt();
+    updateStructuredView();
+    updatePinterestQuery();
+  });
+
+  document.querySelectorAll('textarea, input, select').forEach(el => {
+    el.addEventListener('input', saveFormState);
+    el.addEventListener('change', saveFormState);
+  });
+</script>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-        <script src="syncForm.js"></script>
+
+
 
 
 
