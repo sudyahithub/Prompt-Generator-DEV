@@ -1309,7 +1309,7 @@ if (!wasReset) {
     restoreQuantitiesFromLocalStorage();
   }, 1100);
 } else {
-  sessionStorage.removeItem('resetNow'); // clear flag so next load behaves normally
+  sessionStorage.removeItem('resetNow'); // clear flag so next load behaves normally  
 }
 
 
@@ -2034,6 +2034,21 @@ const rightPanel = document.querySelector('.right-panel');
   });
 }
 
+// 1. Run once when DOM is ready (initial load)
+window.addEventListener('DOMContentLoaded', () => {
+  restoreFromLocalStorage();
+  restoreQuantitiesFromLocalStorage();
+  generatePrompt();              // ✅ this fills the prompt on first load
+  updateStructuredView();
+  updatePinterestQuery();
+});
+
+// 2. Run again when tab regains focus (after switching)
+window.addEventListener('focus', () => {
+  generatePrompt();              // ✅ acts as backup refresher
+  updateStructuredView();
+  updatePinterestQuery();
+});
 
 
 
