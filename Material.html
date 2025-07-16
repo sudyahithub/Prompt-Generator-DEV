@@ -1312,12 +1312,17 @@ if (!wasReset) {
       if (tagElements.length === 0) return;
 
       const grouped = {};
-      tagElements.forEach(tag => {
       const value = tag.getAttribute('data-value')?.trim();
       const header = tag.getAttribute('data-pinterest')?.trim() || tag.getAttribute('data-header')?.trim();
-      if (!grouped[header]) grouped[header] = [];
-      grouped[header].push(value);
-      });
+      if (!value || !header) return;
+
+      const query = header.includes('[')
+        ? header.replace(/\[.*?\]/, value)
+        : `${header} ${value}`;
+
+      const pinterestURL = `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(query)}`;
+      window.open(pinterestURL, '_blank');
+
 
       const searchParts = Object.entries(grouped).map(([header, values]) => {
       const match = header.match(/\[(.*?)\]/);
@@ -1328,9 +1333,6 @@ if (!wasReset) {
       }
       });
 
-      const query = searchParts.join(' ');
-      const pinterestURL = `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(query)}`;
-      window.open(pinterestURL, '_blank');
       });
 
 

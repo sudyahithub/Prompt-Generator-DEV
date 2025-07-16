@@ -1321,7 +1321,7 @@ if (!wasReset) {
 
 
 
-      document.getElementById('labelsBox').addEventListener('click', function (e) {
+    document.getElementById('labelsBox').addEventListener('click', function (e) {
       const tag = e.target.closest('.label-tag');
       if (!tag) return;
 
@@ -1337,14 +1337,18 @@ if (!wasReset) {
       const section = tag.closest('.form-card');
       const tagElements = section.querySelectorAll('.label-tag');
       if (tagElements.length === 0) return;
+    const grouped = {};
+    const value = tag.getAttribute('data-value')?.trim();
+    const header = tag.getAttribute('data-pinterest')?.trim() || tag.getAttribute('data-header')?.trim();
+    if (!value || !header) return;
 
-      const grouped = {};
-      tagElements.forEach(tag => {
-      const value = tag.getAttribute('data-value')?.trim();
-      const header = tag.getAttribute('data-pinterest')?.trim() || tag.getAttribute('data-header')?.trim();
-      if (!grouped[header]) grouped[header] = [];
-      grouped[header].push(value);
-      });
+    const query = header.includes('[')
+    ? header.replace(/\[.*?\]/, value)
+    : `${header} ${value}`;
+
+    const pinterestURL = `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(query)}`;
+    window.open(pinterestURL, '_blank');
+
 
       const searchParts = Object.entries(grouped).map(([header, values]) => {
       const match = header.match(/\[(.*?)\]/);
@@ -1355,8 +1359,8 @@ if (!wasReset) {
       }
       });
 
-      const query = searchParts.join(' ');
-      const pinterestURL = `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(query)}`;
+      // const query = searchParts.join(' ');
+      // const pinterestURL = `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(query)}`;
       window.open(pinterestURL, '_blank');
       });
 
