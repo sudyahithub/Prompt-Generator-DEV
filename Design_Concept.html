@@ -1,6 +1,8 @@
       <!DOCTYPE html>
       <html lang="en">
       <head>
+        <script src="https://cdn.jsdelivr.net/npm/dexie@3.2.3/dist/dexie.min.js"></script>
+
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -232,6 +234,7 @@
 
 
       .prompt-wrapper {
+        
         flex: 0.85;
         height: 100%;
         overflow: auto;
@@ -630,6 +633,30 @@ textarea::placeholder {
 }
 
 
+
+
+
+
+
+
+
+
+
+.placeholder-message {
+  position: absolute;
+  top: 50%;
+  left: 88%;
+  transform: translate(-50%, -50%);
+  color: #666;
+  font-size: 16px;
+  text-align: center;
+  opacity: 0.6;
+  pointer-events: none;
+  max-width: 300px;
+}
+
+
+
         </style>
       </head>
       <body>
@@ -659,12 +686,17 @@ textarea::placeholder {
                    Create with AI
                  </button>
                </div>
+
+          
+
              </div>
 
             
 
             <div class="labels-box" id="labelsBox">
               <!-- labels get injected here -->
+               <!-- <div class="placeholder-message" id="labelsPlaceholder">Visual tags appear here as you choose design options.</div> -->
+
             </div>
           </div>
 
@@ -685,18 +717,7 @@ textarea::placeholder {
       <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
 
 
-      <script>
-          const TAB_ID_KEY = 'promptBuilderTabId';
-let tabId = sessionStorage.getItem(TAB_ID_KEY);
-
-if (!tabId) {
-  tabId = Math.random().toString(36).substr(2, 9);
-  sessionStorage.setItem(TAB_ID_KEY, tabId);
-}
-
-const FORM_KEY = `formValues-${tabId}`;
-const QUANT_KEY = `optionQuantities-${tabId}`;
-
+         <script>
 
 
 
@@ -717,8 +738,21 @@ function resetAllFields() {
         const optionQuantities = {};
 window.optionQuantities = optionQuantities;
 
+// Initialize tabId once per tab
+if (!sessionStorage.getItem('tabId')) {
+  sessionStorage.setItem('tabId', crypto.randomUUID());
+}
+const tabId = sessionStorage.getItem('tabId');
 
-function saveToLocalStorage() {
+// Setup Dexie
+const db = new Dexie("PromptBuilderDB");
+db.version(1).stores({
+  formStates: "++id, tabId, timestamp"
+});
+
+
+
+async function saveToDexie() {
   const inputs = document.querySelectorAll('select, textarea');
   const savedData = {};
 
@@ -733,18 +767,23 @@ function saveToLocalStorage() {
     }
   });
 
-  localStorage.setItem(FORM_KEY, JSON.stringify(savedData));
+  // Include quantities
+  savedData.__quantities = { ...window.optionQuantities };
+
+  await db.formStates.put({
+    tabId,
+    timestamp: Date.now(),
+    data: savedData
+  });
 }
 
-
-
-function saveQuantitiesToLocalStorage() {
-  localStorage.setItem(QUANT_KEY, JSON.stringify(optionQuantities));
-}
+// function saveQuantitiesToLocalStorage() {
+//   localStorage.setItem('optionQuantities', JSON.stringify(optionQuantities));
+// }
 
 // Call this after any change
-document.addEventListener('change', saveToLocalStorage);
-document.addEventListener('input', saveToLocalStorage);
+document.addEventListener('change', saveToDexie);
+document.addEventListener('input', saveToDexie);
 
 
 
@@ -813,8 +852,7 @@ window.addEventListener('beforeunload', (event) => {
 
 
 
-          
-         document.getElementById("Client").addEventListener("click", function() {
+       document.getElementById("Client").addEventListener("click", function() {
   window.location.href = "index.html"});
 
   document.getElementById("Zoning").addEventListener("click", function() {
@@ -842,6 +880,7 @@ alert("✅ Prompt copied to clipboard. Just paste (Ctrl+V) into the chat.");
 alert("❌ Failed to copy prompt. Please copy it manually.");
 });
 });
+
 
 
 
@@ -1237,12 +1276,13 @@ searchWrapper.appendChild(selectWrapper);
         autosizePlaceholderTextareas(-10);// adds 6px of extra space
       };
 
-function restoreFromLocalStorage() {
-  const saved = localStorage.getItem(FORM_KEY);
-  if (!saved) return;
+async function restoreFromDexie() {
+  const record = await db.formStates.where('tabId').equals(tabId).last();
+  if (!record?.data) return;
 
-  const data = JSON.parse(saved);
+  const data = record.data;
 
+  // Restore input values
   document.querySelectorAll('select, textarea').forEach(el => {
     const key = el.getAttribute('data-header') || el.id;
     if (!key || !(key in data)) return;
@@ -1257,35 +1297,44 @@ function restoreFromLocalStorage() {
 
     el.dispatchEvent(new Event('change'));
   });
+
+  // Restore optionQuantities if available
+  if (data.__quantities) {
+    Object.assign(window.optionQuantities, data.__quantities);
+
+    // Update counters
+    document.querySelectorAll('select[multiple]').forEach(select => {
+      const fieldId = normalizeId(select.id);
+      const container = select.closest('.search-wrapper')?.querySelector('.quantity-container');
+      if (container && window.optionQuantities[fieldId]) {
+        updateQuantitiesForSelect(select, container, fieldId);
+      }
+    });
+  }
+
+  // Regenerate prompts or tags if needed
+  generatePrompt();
+  updateStructuredView();
+  updatePinterestQuery();
 }
 
 
 
-function restoreQuantitiesFromLocalStorage() {
-  const saved = localStorage.getItem(QUANT_KEY);
-  if (!saved) return;
 
-  const parsed = JSON.parse(saved);
-  Object.assign(optionQuantities, parsed);
 
-  document.querySelectorAll('select[multiple]').forEach(select => {
-    const fieldId = normalizeId(select.id);
-    const container = select.closest('.search-wrapper')?.querySelector('.quantity-container');
-    if (container && optionQuantities[fieldId]) {
-      updateQuantitiesForSelect(select, container, fieldId);
-    }
-  });
-}
+
+
 
 // Run this after all elements are rendered
 const wasReset = sessionStorage.getItem('resetNow') === 'true';
 
 if (!wasReset) {
-  setTimeout(() => {
-    restoreFromLocalStorage();
-    restoreQuantitiesFromLocalStorage();
+  setTimeout(async () => {
+    await restoreFromDexie();
+    restoreQuantitiesFromLocalStorage(); // still uses localStorage unless you Dexie it too
   }, 1100);
-} else {
+}
+ else {
   sessionStorage.removeItem('resetNow'); // clear flag so next load behaves normally  
 }
 
@@ -2012,17 +2061,17 @@ const rightPanel = document.querySelector('.right-panel');
 }
 
 // 1. Run once when DOM is ready (initial load)
-window.addEventListener('DOMContentLoaded', async () => {
-  await restoreFormState();  // ✅ Works now
-  generatePrompt();
+window.addEventListener('DOMContentLoaded', () => {
+  restoreFromLocalStorage();
+  restoreQuantitiesFromLocalStorage();
+  generatePrompt();              // ✅ this fills the prompt on first load
   updateStructuredView();
   updatePinterestQuery();
 });
 
 // 2. Run again when tab regains focus (after switching)
-window.addEventListener('focus', async () => {
-  await restoreFormState(); // ✅ Works now
-  generatePrompt();
+window.addEventListener('focus', () => {
+  generatePrompt();              // ✅ acts as backup refresher
   updateStructuredView();
   updatePinterestQuery();
 });
@@ -2031,25 +2080,8 @@ window.addEventListener('focus', async () => {
 
 
       </script>
-<script type="module">
-  import { restoreFormState, saveFormState } from './syncForm.js';
-
-  window.addEventListener('DOMContentLoaded', async () => {
-    await restoreFormState();
-    generatePrompt();
-    updateStructuredView();
-    updatePinterestQuery();
-  });
-
-  document.querySelectorAll('textarea, input, select').forEach(el => {
-    el.addEventListener('input', saveFormState);
-    el.addEventListener('change', saveFormState);
-  });
-</script>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-
 
 
 

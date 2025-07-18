@@ -36,8 +36,14 @@ window.saveFormState = async function () {
     }
   });
 
+  // ✅ Add quantities
+  if (window.optionQuantities) {
+    state.__quantities = window.optionQuantities;
+  }
+
   await window.formDB.formStates.put({ key, value: state });
 };
+
 
 // Restore form state
 window.restoreFormState = async function () {
@@ -65,4 +71,18 @@ window.restoreFormState = async function () {
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
   });
+
+  // ✅ Restore quantities
+  if (state.__quantities && typeof state.__quantities === 'object') {
+    window.optionQuantities = state.__quantities;
+
+    // Re-render quantity inputs
+    document.querySelectorAll('select[multiple]').forEach(select => {
+      const fieldId = select.id || normalizeId(select.id);
+      const container = select.closest('.search-wrapper')?.querySelector('.quantity-container');
+        updateQuantitiesForSelect(select, container, fieldId);
+      
+    });
+  }
 };
+
