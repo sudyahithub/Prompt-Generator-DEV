@@ -720,14 +720,14 @@ textarea::placeholder {
       </head>
       <body>
       <!-- <h1>Photorealistic Office Render Prompt Builder</h1> -->
-      <div class="tab-bar">
-        <a class="tab" href="Meeting_Assistant.html" id="Meeting">Meeting Assistant</a>
-        <a class="tab" href="index.html" id="Client">Client Persona</a>
-        <a class="tab" href="Zoning_insights.html" id="Zoning">Zoning Insights</a>
-        <a class="tab active" href="Design_Concept.html" id="Design">Design Concept</a>
-        <a class="tab" href="Material.html" id="Material">Material Board</a>
-        <a class="tab" href="Material_Canvas.html" id="Canvas">Material Canvas</a>
-      </div>
+       <div class="tab-bar">
+         <a class="tab" href="Meeting_Assistant.html" id="Meeting">Meeting Assistant</a>
+         <a class="tab" href="index.html" id="Client">Client Persona</a>
+         <a class="tab" href="Zoning_insights.html" id="Zoning">Zoning Insights</a>
+         <a class="tab" href="Design_Concept.html" id="Design">Design Concept</a>
+         <a class="tab" href="Material.html" id="Material">Material Board</a>
+         <a class="tab active" href="Material_Canvas.html" id="Canvas">Material Canvas</a>
+       </div>
 
        <div class="container">
          <div class="scrollable-form">
@@ -915,22 +915,23 @@ window.addEventListener('beforeunload', (event) => {
 document.getElementById("Meeting").addEventListener("click", function() {
   window.location.href = "Meeting_Assistant.html"});
 
+
        document.getElementById("Client").addEventListener("click", function() {
   window.location.href = "index.html"});
 
   document.getElementById("Zoning").addEventListener("click", function() {
   window.location.href = "Zoning_insights.html"});
-
-  document.getElementById("Canvas").addEventListener("click", function() {
-  window.location.href = "Material_Canvas.html"});
   
+  document.getElementById("Design").addEventListener("click", function() {
+  window.location.href = "Design_Concept.html"});
+
   document.getElementById("Material").addEventListener("click", function() {
   window.location.href = "Material.html"});
 
 
 
 
-     document.getElementById("openCustomGPT").addEventListener("click", function () {
+         document.getElementById("openCustomGPT").addEventListener("click", function () {
 const prompt = document.getElementById("finalPrompt").value.trim();
 if (!prompt) {
 alert("Prompt is empty!");
@@ -939,7 +940,7 @@ return;
 
 // Copy to clipboard first
 navigator.clipboard.writeText(prompt).then(() => {
-const customGPTURL = "https://chatgpt.com/g/g-686e1d72e20c8191815036cebe628929-3-design-concept";
+const customGPTURL = "https://chatgpt.com/g/g-686e2f64287081919d96a2dec8206a55-4-material-board";
 window.open(customGPTURL, "_blank");
 alert("✅ Prompt copied to clipboard. Just paste (Ctrl+V) into the chat.");
 }).catch(() => {
@@ -1022,7 +1023,7 @@ alert("❌ Failed to copy prompt. Please copy it manually.");
       }
         
       // const sheetURL = 'https://docs.google.com/spreadsheets/d/1qXN1MR1pW3laS1wH_FI3vPblg3ANcqCMWVoGl0H7wek/export?format=csv';
-      const sheetURL = 'https://docs.google.com/spreadsheets/d/1TtxfPpIIYBjzP32-9n9snZbNoCU69mSvYVbA3uAgGcY/export?format=csv&gid=1370946748';
+      const sheetURL = 'https://docs.google.com/spreadsheets/d/1TtxfPpIIYBjzP32-9n9snZbNoCU69mSvYVbA3uAgGcY/export?format=csv&gid=1629508631';
 
 
 

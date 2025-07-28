@@ -10,10 +10,10 @@
         <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
         <style>
           body {
-            font-family: Arial, sans-serif;
+            font-family: Arial, sans-serif!important;
             /* font-size: 18px; */
             padding: 1rem;
-            background-color: #111;
+            background-color: #f4f2f1;
             color: white;
             overflow: hidden;
           }
@@ -38,10 +38,22 @@
           max-width: 20%;
           }
 
-          .form-group textarea{
-            max-width: 95%;
+          ::placeholder{
+            font-family: Arial, sans-serif;
           }
-          
+
+          .form-group textarea{
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.1);
+            max-width: 95%;
+            color: black;
+            background-color: #F4F2F1;
+            border: none;
+          }
+          textarea:focus,
+          input[type="text"]:focus {
+          border: 1px solid #F0BD44 !important; /* or #ccc for soft gray */
+          outline: red !important;
+          }
 
           
           /* Scrollbar */
@@ -54,19 +66,19 @@
           }
 
           ::-webkit-scrollbar-track {
-            background-color: #1a1a1a;
+            background-color: #f8f8f8;
             border-radius: 10px;
           }
 
           ::-webkit-scrollbar-thumb {
-            background-color: #555;
+            background-color: rgb(197, 197, 197);
             border-radius: 10px;
-            border: 2px solid #1a1a1a; /* creates spacing around thumb */
+            border: 2px solid #e6e6e6; /* creates spacing around thumb */
             transition: background-color 0.3s ease;
           }
 
           ::-webkit-scrollbar-thumb:hover {
-            background-color: #888;
+            background-color: #F0BD44;
           }
 
           /* Optional: Fade into background */
@@ -78,6 +90,7 @@
           .form-section {
             display: flex;
             flex-direction: column;
+            
             gap: 1rem;
             width: 100%;
           }
@@ -91,8 +104,8 @@
             padding: 0.5rem;
             border-radius: 5px;
             border: 1px solid #666;
-            background: black;
-            color: #A2A2A2;
+            background: #F4F2F1;
+            color: #666;
             /* font-size: 16px; */
           }
           
@@ -129,20 +142,20 @@
       .pinterest-row input {
       flex: 1;
       padding: 0.5rem 1rem;
-      background-color: #1a1a1a; /* Dark background */
-      color: #ddd; /* Light text */
-      border: 1px solid #444; /* Subtle border */
+      background-color: white; /* Dark background */
+      color: #7c7c7c; /* Light text */
+      border: 2px solid #F0BD44; 
       border-radius: 8px;
       font-size: 14px;
-      outline: none;
+      font-weight: 600;
       transition: border 0.2s ease, background-color 0.2s ease;
       }
 
       /* Optional: focus effect */
-      .pinterest-row input:focus {
+      /* .pinterest-row input:focus {
       background-color: #222;
       border-color: #666;
-      }
+      } */
 
 
       .pinterest-row button {
@@ -195,45 +208,47 @@
 
 
 
-      .label-tag {
-        padding: 0.5rem 0.75rem;
-        border-radius: 16px;
-        /* font-size: 14px; */
-        background-color: #666;
-        color: white;
-        display: inline-block;
-        margin: 0.25rem;
-        max-width: 220px;
-        word-break: break-word;
-        line-height: 1.3;
-      }
+.label-tag {
+  background-color: white !important;  /* Gold background */
+  color: black !important;               /* Dark readable text */
+  border: 2px solid #DEF5F1;             /* Optional: subtle border */
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
 
-      .label-tag .remove {
+
+     .remove {
         margin-left: 0.5rem;
-        color: #bbb;
+        color: black !important;
         cursor: pointer;
         font-weight: bold;
       }
 
       .form-card {
-        background-color: #1b1b1b;
+        background-color: #F4F2F1;
         padding: 1rem;
         border-radius: 10px;
-        border: 1px solid #444;
         margin-bottom: 1rem;
+        color: black;
+        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
       }
 
       .form-card-header {
         font-weight: bold;
         /* font-size: 16px; */
         margin-bottom: 0.5rem;
-        color: #ccc;
+        color: #7c7c7c!important;
       }
 
 
 
 
       .prompt-wrapper {
+        
         flex: 0.85;
         height: 100%;
         overflow: auto;
@@ -241,27 +256,32 @@
       }
 
       .output {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         font-family: Arial, sans-serif;
+        font-size: 16px;
+        padding: 12px;
+        font-weight: medium;
         width: 100%;
         height: 100%;
         resize: none;
         /* padding: 1rem; */
         /* font-size: 16px; */
-        background: black;
-        color: #A2A2A2;
+        background: white;
+        color: rgb(39, 39, 39);
         border-radius: 8px;
-        border: 1px solid #555;
+        border: none!important;
         box-sizing: border-box;
         min-height: 100%;
       }
 
       .labels-box {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         width: 100%;
         flex: 0.37;
-        background: black;
+        background: #ffffff;
         color: white;
         border-radius: 8px;
-        border: 1px solid #555;
+        border: 0px solid #F0BD44;
         padding: 1rem;
         border-radius: 10px;
         overflow-y: auto;
@@ -302,10 +322,11 @@
 
       .form-group {
         /* margin-bottom: 1.5rem; */
-        background-color: #111;
+        background-color: #ffffff;
         padding: 1rem;
-        border: 1px solid #444;
+        border: 0px solid #F0BD44;
         border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
       }
 
       .form-group h3 {
@@ -334,7 +355,7 @@
         /* margin-top: 1rem; */
         margin-bottom: 0.5rem;
         font-weight: bold;
-        color: #ccc;
+        
         /* font-size: 20px; */
       }
 
@@ -342,11 +363,18 @@
         width: 100%;
         height: auto;
         padding: 0.5rem;
-        background-color: black;
-        color: #A2A2A2;
-        border: 1px solid #666;
+        background-color: #f4f1f1;
+        color: black;
+        border: none;
         border-radius: 5px;
       }
+
+      select[multiple]:focus {
+      border: none !important; /* or use #ccc / #999 if you prefer */
+      outline: none !important;
+      }
+      
+    
 
       .label-tag .remove {
         margin-left: 0.5rem;
@@ -368,7 +396,8 @@
     gap: 0.3rem;
     color: #A2A2A2;
     }
-
+    
+    
     
 
     .form-card-header i.fa-pinterest {
@@ -386,7 +415,7 @@
     /* font-size: 22px; */
     margin-top: 0.5rem;
     cursor: pointer;
-    color: white;
+    color: black;
     border-bottom: 2px solid #555;
     padding-bottom: 1rem;
     }
@@ -394,6 +423,7 @@
 
 
 .toggle-icon {
+  color: black!important; /* 🌟 Teal or use #FFD700 for gold */
   font-size: 16px;
   transition: transform 0.2s ease;
 }
@@ -403,7 +433,7 @@
 }
 
 .toggle-icon {
-  color: grey; /* 🌟 Teal or use #FFD700 for gold */
+  color: black!important; /* 🌟 Teal or use #FFD700 for gold */
   font-size: 20px;
   transition: transform 0.2s ease;
 }
@@ -419,6 +449,7 @@
 }
 
 .label-tag {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 0.5rem 0.75rem;
   border-radius: 16px;
   /* font-size: 14px; */
@@ -467,7 +498,7 @@ button {
 }
 
 label {
-  color: #A2A2A2 !important;
+  color: #7c7c7c!important;
   margin-top: 1rem;
 }
 
@@ -505,25 +536,37 @@ margin-top: 0px;
 }
 
 .tab {
+  display: flex;
   flex: 1;
+  background: white;     /* Selected background */
+  color: black;   
+  /* border: 2px solid #F0BD44;  */
   text-align: center;
-  padding: 8px 12px;
-  background: #333;      /* Unselected background */
-  color: #eee;          /* Unselected text */
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;     /* Unselected background */
+  color: black;          /* Unselected text */
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
+  border: none;
 }
 
+
+
 .tab.active {
-  background: white;     /* Selected background */
-  color: black;          /* Selected text */
+  background: #F0BD44;     /* Selected background */
+  color: black;   
+  border: 2px solid #F0BD44;  /* Selected text */
+  
+  border-radius: 8px;
 }
 
 
 .tab:hover {
-  background: #555;
-  color: #fff;
+  background: #F0BD44;
+  color: black;
+  border-color: #F0BD44; 
 }
 
 .tab.active::before {
@@ -552,6 +595,8 @@ margin-top: 0px;
 
 .floating-chatgpt-btn:hover {
   background: #12b087;
+  color: white;
+  border: none;
   transform: translateY(-1px);
 }
 
@@ -571,23 +616,22 @@ margin-top: 0px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #222; /* dark background */
-  border: 1px solid #444;
+  background-color: #DEF5F1; /* dark background */
   border-radius: 6px;
   padding: 0.4rem 0.6rem;
 }
 
 .quantity-label {
-  color: #ddd;
+
+  color: black;
   font-size: 14px;
   flex: 1;
 }
 
 .quantity-input {
   width: 60px;
-  background-color: #111;
-  border: 1px solid #555;
-  color: #fff;
+  background-color: #d8d8d8;
+  color: black;
   padding: 0.3rem;
   border-radius: 4px;
   text-align: center;
@@ -601,9 +645,12 @@ textarea::placeholder {
 
 
 
+
+
 .floating-btn-container {
   position: absolute;
   bottom: 16px;
+  
   right: 16px;
   display: flex;
   gap: 10px;
@@ -611,10 +658,10 @@ textarea::placeholder {
 }
 
 .floating-chatgpt-btn {
-  background: #10a37f;
-  color: white;
+  background: #DEF5F1;
+  color: black;
   padding: 8px 14px;
-  border: none;
+  border: 2px solid #74d8c7;
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
@@ -626,8 +673,47 @@ textarea::placeholder {
 
 
 .floating-chatgpt-btn.reset-btn {
-  background-color: #444;
+  background-color: #7c7c7c;
+  color: white;
+  border: none;
 }
+
+
+
+
+
+
+
+
+
+
+
+.placeholder-message {
+  position: absolute;
+  top: 50%;
+  left: 88%;
+  transform: translate(-50%, -50%);
+  color: #666;
+  font-size: 16px;
+  text-align: center;
+  opacity: 0.6;
+  pointer-events: none;
+  max-width: 300px;
+}
+
+.tab {
+  text-decoration: none !important; /* removes any underline */
+  -webkit-text-decoration-skip: objects;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid #F2E0B7;
+}
+
+.search-wrapper Input {
+  background-color: #F4F2F1!important;
+  border: none!important;
+  color: black!important;
+}
+
 
 
         </style>
@@ -635,11 +721,14 @@ textarea::placeholder {
       <body>
       <!-- <h1>Photorealistic Office Render Prompt Builder</h1> -->
        <div class="tab-bar">
-         <div class="tab "id="Client">Client Persona</div>
-         <div class="tab active" >Zoning Insights</div>
-         <div class="tab"id="Design">Design Concept</div>
-         <div class="tab"id="Material">Material Board</div>
+         <a class="tab" href="Meeting_Assistant.html" id="Meeting">Meeting Assistant</a>
+         <a class="tab" href="index.html" id="Client">Client Persona</a>
+         <a class="tab active" href="Zoning_insights.html" id="Zoning">Zoning Insights</a>
+         <a class="tab" href="Design_Concept.html" id="Design">Design Concept</a>
+         <a class="tab" href="Material.html" id="Material">Material Board</a>
+         <a class="tab" href="Material_Canvas.html" id="Canvas">Material Canvas</a>
        </div>
+
        <div class="container">
          <div class="scrollable-form">
            <div id="formContainer" class="form-section"></div>
@@ -819,13 +908,17 @@ window.addEventListener('beforeunload', (event) => {
  
 
 
-
+document.getElementById("Meeting").addEventListener("click", function() {
+  window.location.href = "Meeting_Assistant.html"});
 
   document.getElementById("Client").addEventListener("click", function() {
   window.location.href = "index.html"});
 
   document.getElementById("Design").addEventListener("click", function() {
   window.location.href = "Design_Concept.html"});
+
+  document.getElementById("Canvas").addEventListener("click", function() {
+  window.location.href = "Material_Canvas.html"});
   
   document.getElementById("Material").addEventListener("click", function() {
   window.location.href = "Material.html";
