@@ -721,12 +721,12 @@ textarea::placeholder {
       <body>
       <!-- <h1>Photorealistic Office Render Prompt Builder</h1> -->
        <div class="tab-bar">
-         <a class="tab active" href="Meeting_Assistant.html" id="Meeting">Meeting Assistant</a>
+         <!-- <a class="tab active" href="Meeting_Assistant.html" id="Meeting">Meeting Assistant</a> -->
          <a class="tab" href="index.html" id="Client">Client Persona</a>
          <a class="tab" href="Zoning_insights.html" id="Zoning">Zoning Insights</a>
          <a class="tab" href="Design_Concept.html" id="Design">Design Concept</a>
          <a class="tab" href="Material.html" id="Material">Material Board</a>
-         <a class="tab" href="Material_Canvas.html" id="Canvas">Material Canvas</a>
+         <!-- <a class="tab" href="Render_Creator.html" id="Canvas">Material Canvas</a> -->
        </div>
 
        <div class="container">
@@ -787,14 +787,33 @@ textarea::placeholder {
 
 
 
+// function resetAllFields() {
+//   if (confirm("Clear all fields and reset the form?")) {
+//     localStorage.clear(); // fully clear all keys
+//     sessionStorage.setItem('resetNow', 'true'); // temporary flag
+//     location.reload(); // force reload
+//   }
+// }
+
+
 function resetAllFields() {
   if (confirm("Clear all fields and reset the form?")) {
-    localStorage.clear(); // fully clear all keys
-    sessionStorage.setItem('resetNow', 'true'); // temporary flag
-    location.reload(); // force reload
+    // Clear localStorage
+    localStorage.clear();
+
+    // Clear Dexie for this tabId
+    const db = new Dexie("PromptBuilderDB");
+    db.version(1).stores({
+      formStates: "++id, tabId, timestamp"
+    });
+
+    const tabId = sessionStorage.getItem('tabId');
+    db.formStates.where('tabId').equals(tabId).delete().then(() => {
+      sessionStorage.setItem('resetNow', 'true');
+      location.reload();
+    });
   }
 }
-
 
 
         const optionQuantities = {};
@@ -922,8 +941,8 @@ window.addEventListener('beforeunload', (event) => {
   document.getElementById("Design").addEventListener("click", function() {
   window.location.href = "Design_Concept.html"});
 
-  document.getElementById("Canvas").addEventListener("click", function() {
-  window.location.href = "Material_Canvas.html"});
+  // document.getElementById("Canvas").addEventListener("click", function() {
+  // window.location.href = "Render_Creator.html"});
   
   document.getElementById("Material").addEventListener("click", function() {
   window.location.href = "Material.html";

@@ -728,14 +728,14 @@ textarea::placeholder {
       </head>
       <body>
       <!-- <h1>Photorealistic Office Render Prompt Builder</h1> -->
-      <div class="tab-bar">
-        <!-- <a class="tab" href="Meeting_Assistant.html" id="Meeting">Meeting Assistant</a> -->
-        <a class="tab" href="index.html" id="Client">Client Persona</a>
-        <a class="tab" href="Zoning_insights.html" id="Zoning">Zoning Insights</a>
-        <a class="tab" href="Design_Concept.html" id="Design">Design Concept</a>
-        <a class="tab active" href="Material.html" id="Material">Material Board</a>
-        <!-- <a class="tab" href="Render_Creator.html" id="Canvas">Render Creator</a> -->
-      </div>
+       <div class="tab-bar">
+         <!-- <a class="tab" href="Meeting_Assistant.html" id="Meeting">Meeting Assistant</a> -->
+         <a class="tab" href="index.html" id="Client">Client Persona</a>
+         <a class="tab" href="Zoning_insights.html" id="Zoning">Zoning Insights</a>
+         <a class="tab" href="Design_Concept.html" id="Design">Design Concept</a>
+         <a class="tab" href="Material.html" id="Material">Material Board</a>
+         <a class="tab active" href="Render_Creator.html" id="Canvas">Render Creator</a>
+       </div>
 
        <div class="container">
          <div class="scrollable-form">
@@ -803,6 +803,10 @@ textarea::placeholder {
 //   }
 // }
 
+
+
+
+
 function resetAllFields() {
   if (confirm("Clear all fields and reset the form?")) {
     // Clear localStorage
@@ -821,11 +825,6 @@ function resetAllFields() {
     });
   }
 }
-
-
-
-
-
 
 
         const optionQuantities = {};
@@ -881,32 +880,32 @@ document.addEventListener('input', saveToDexie);
 
 
 
-// window.addEventListener('beforeunload', (event) => {
-//   if (window.skipUnloadWarning) return; // Allow silent navigation when flag is set
+window.addEventListener('beforeunload', (event) => {
+  if (window.skipUnloadWarning) return; // Allow silent navigation when flag is set
 
-//   const savedData = JSON.parse(localStorage.getItem('formValues') || '{}');
+  const savedData = JSON.parse(localStorage.getItem('formValues') || '{}');
 
-//   const isFormDirty = Array.from(document.querySelectorAll('select, textarea'))
-//     .some(el => {
-//       const key = el.getAttribute('data-header') || el.id;
-//       if (!key) return false;
+  const isFormDirty = Array.from(document.querySelectorAll('select, textarea'))
+    .some(el => {
+      const key = el.getAttribute('data-header') || el.id;
+      if (!key) return false;
 
-//       const savedVal = savedData[key];
+      const savedVal = savedData[key];
 
-//       if (el.tagName === 'SELECT' && el.multiple) {
-//         const currentVal = Array.from(el.selectedOptions).map(opt => opt.value);
-//         return JSON.stringify(currentVal) !== JSON.stringify(savedVal || []);
-//       } else {
-//         const currentVal = (el.value || '').trim();
-//         return currentVal !== (savedVal || '').trim();
-//       }
-//     });
+      if (el.tagName === 'SELECT' && el.multiple) {
+        const currentVal = Array.from(el.selectedOptions).map(opt => opt.value);
+        return JSON.stringify(currentVal) !== JSON.stringify(savedVal || []);
+      } else {
+        const currentVal = (el.value || '').trim();
+        return currentVal !== (savedVal || '').trim();
+      }
+    });
 
-//   if (isFormDirty) {
-//     event.preventDefault();       // Required for some browsers
-//     event.returnValue = '';       // Required for Chrome + modern browsers
-//   }
-// });
+  if (isFormDirty) {
+    event.preventDefault();       // Required for some browsers
+    event.returnValue = '';       // Required for Chrome + modern browsers
+  }
+});
 
 
 
@@ -942,9 +941,9 @@ document.addEventListener('input', saveToDexie);
 
  
 
+
 // document.getElementById("Meeting").addEventListener("click", function() {
 //   window.location.href = "Meeting_Assistant.html"});
-
 
 
        document.getElementById("Client").addEventListener("click", function() {
@@ -956,10 +955,9 @@ document.addEventListener('input', saveToDexie);
   document.getElementById("Design").addEventListener("click", function() {
   window.location.href = "Design_Concept.html"});
 
-  // document.getElementById("Canvas").addEventListener("click", function() {
-  // window.location.href = "Render_Creator.html"});
+  document.getElementById("Material").addEventListener("click", function() {
+  window.location.href = "Material.html"});
 
- 
 
 
 
@@ -2019,7 +2017,7 @@ if (!optionQuantities[fieldId][val]) {
 //   }
 // }
 
-function removeLabel(fieldIdOrLabel, valueToRemove) {
+    function removeLabel(fieldIdOrLabel, valueToRemove) {
   const fieldKey = normalizeId(fieldIdOrLabel); // always normalize
   const el = document.getElementById(fieldKey);
 
@@ -2052,6 +2050,7 @@ function removeLabel(fieldIdOrLabel, valueToRemove) {
   updatePinterestQuery();
   saveToDexie();
 }
+
 
 
 
